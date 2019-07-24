@@ -1,8 +1,12 @@
 const express = require('express');
 const app = express();
-const cors = require('cors')
+const bcrypt=require("bcrypt-nodejs");
+const cors = require('cors');
+var path = require('path');
+var passport = require('passport');
+var mongoose = require('mongoose');
 
-var mongoose = require("mongoose");
+app.use(passport.initialize());
 
 var User = require("./models/usersmodel");
 
@@ -46,35 +50,47 @@ app.use(bodyParser.json())
           lastName: req.body.lastName,
           gender: req.body.gender,
           email: req.body.email,
-          password: req.body.password
+          password: bcrypt.hashSync(req.body.password)
         });
 
-
-        User.create(newUser, (err, res) => {
-          if (err) {
-            console.log(err);
+        User.findOne({
+          email: req.body.email
+        }).then(msg => {
+          if (msg) {
+            res.json("User is already registerd" );
           } else {
-            console.log(res);
+            User.create(newUser, (err, res) => {
+              if (err) {
+                console.log("Duplicate entry for email");
+                res.json("Duplicate entry for email")
+              } else {
+                console.log(res);
+              }
+            });
           }
         });
       });
 
       app.post("/users/login", function(req, res) {
-        var email  = req.body.email;
-        var password = req.body.password;
-
-        User.findOne({ $and: [{email : email}, {password : password}] }).exec(function(err,data){
-            if(err){
-                console.log(err);
-            }if(!data){
-                console.log("Log in fail")
-                console.log(res);
-            }
+              console.log(req.body);
+        User.findOne({email : req.body.email}).exec(function(err,data){
+          if (err) {
+            console.log(err);
+        } else if (!data) {
+            console.log("Sorry! email not found!")
+        }
             else{
-                    console.log("log in successfull!")
-                    res.json(data);
-                  
-                    console.log("username" + email + "Password" + password);
+                    // checking for password correction
+            value = bcrypt.compareSync(req.body.password, data.password);
+            if (!value) {
+                console.log(value);
+                res.json("Sorry! password is wrong");
+                console.log("Sorry! password is wrong")
+            } else {
+              console.log(value);
+              console.log("Login Successfull!")
+              res.json(data);
+            }
             }
         });
       });
