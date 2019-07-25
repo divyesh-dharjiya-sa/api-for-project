@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const bcrypt=require("bcrypt-nodejs");
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 var path = require('path');
 var passport = require('passport');
 var mongoose = require('mongoose');
@@ -24,6 +25,22 @@ var corsOptions = {
 app.use(cors(corsOptions))
 
 app.use(bodyParser.json())
+
+function verifyToken(req, res, next) {
+  if(!req.headers.authorization) {
+    return res.status(401).send('Unauthorized request')
+  }
+  let token = req.headers.authorization.split(' ')[1]
+  if(token === 'null') {
+    return res.status(401).send('Unauthorized request')    
+  }
+  let payload = jwt.verify(token, 'secretKey')
+  if(!payload) {
+    return res.status(401).send('Unauthorized request')    
+  }
+  req.userId = payload.subject
+  next()
+}
 
     app.get("/users", function(req, res) {
       // Userschema.create({name:"dfg",age:"20"},function(err,data){
@@ -59,12 +76,14 @@ app.use(bodyParser.json())
           if (msg) {
             res.json("User is already registerd" );
           } else {
-            User.create(newUser, (err, res) => {
+            User.create(newUser, (err, data) => {
               if (err) {
                 console.log("Duplicate entry for email");
                 res.json("Duplicate entry for email")
               } else {
-                console.log(res);
+                let payload = {subject: data._id};
+                let token = jwt.sign(payload , 'secretKey');
+                res.json({token});
               }
             });
           }
@@ -89,7 +108,9 @@ app.use(bodyParser.json())
             } else {
               console.log(value);
               console.log("Login Successfull!")
-              res.json(data);
+              let payload = {subject: data._id};
+                let token = jwt.sign(payload , 'secretKey');
+                res.json({token});
             }
             }
         });
