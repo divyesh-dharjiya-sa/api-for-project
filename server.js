@@ -37,7 +37,7 @@ function verifyToken(req, res, next) {
   let payload = jwt.verify(token, 'secretKey')
   if(!payload) {
     return res.status(401).send('Unauthorized request')    
-  }
+  }``
   req.userId = payload.subject
   next()
 }
@@ -110,7 +110,7 @@ function verifyToken(req, res, next) {
               console.log("Login Successfull!")
               let payload = {subject: data._id};
                 let token = jwt.sign(payload , 'secretKey');
-                res.json({token});
+                res.json({token: token});
             }
             }
         });
