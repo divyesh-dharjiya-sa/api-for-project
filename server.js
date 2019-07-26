@@ -31,8 +31,8 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 aws.config.update({
-  secretAccessKey: 'XQulqTmwzzu/6ppQ+WJhx2Iwt6mCcHYVr8fPCukn',
-  accessKeyId: 'AKIAJXYGAMMKJLLT5BBQ',
+  secretAccessKey: process.env.ACCESS_KEY_ID,
+  accessKeyId: process.env.SECRET_ACCESS_KEY,
   region: 'ap-south-1',
   ACL:'public-read'
 });
