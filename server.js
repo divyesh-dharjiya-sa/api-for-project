@@ -3,9 +3,13 @@ const app = express();
 const bcrypt=require("bcrypt-nodejs");
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
-var path = require('path');
+// var path = require('path');
 var passport = require('passport');
 var mongoose = require('mongoose');
+var aws = require('aws-sdk');
+var multer = require('multer');
+var multerS3 = require('multer-s3'); 
+const s3 = new aws.S3();
 
 app.use(passport.initialize());
 
@@ -22,9 +26,27 @@ var corsOptions = {
   origin: 'http://localhost:4200',
   optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204 
 }
-app.use(cors(corsOptions))
+app.use(cors(corsOptions));
 
-app.use(bodyParser.json())
+app.use(bodyParser.json());
+
+aws.config.update({
+  secretAccessKey: 'XQulqTmwzzu/6ppQ+WJhx2Iwt6mCcHYVr8fPCukn',
+  accessKeyId: 'AKIAJXYGAMMKJLLT5BBQ',
+  region: 'ap-south-1',
+  ACL:'public-read'
+});
+
+var upload = multer({
+  storage: multerS3({
+      s3: s3, 
+      bucket: 'angular-test-divyesh',
+      key: function (req, file, cb) {
+          console.log(file);
+          cb(null, file.originalname); //use Date.now() for unique file keys
+      }
+  })
+});
 
 function verifyToken(req, res, next) {
   if(!req.headers.authorization) {
@@ -115,6 +137,10 @@ function verifyToken(req, res, next) {
             }
         });
       });
+
+      app.post('/upload', upload.single('file'), function (req, res, next) {
+        res.send("Uploaded!");
+    });
 
 app.listen(4000, () => {
     console.log('Server started!')
