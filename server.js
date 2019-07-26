@@ -9,11 +9,13 @@ var mongoose = require('mongoose');
 var aws = require('aws-sdk');
 var multer = require('multer');
 var multerS3 = require('multer-s3'); 
-const s3 = new aws.S3();
+
+require('custom-env').env();
 
 app.use(passport.initialize());
 
 var User = require("./models/usersmodel");
+var Training = require("./models/trainingmodel");
 
 mongoose.connect("mongodb://localhost:27017/training", {
   useNewUrlParser: true
@@ -31,11 +33,13 @@ app.use(cors(corsOptions));
 app.use(bodyParser.json());
 
 aws.config.update({
-  secretAccessKey: process.env.ACCESS_KEY_ID,
-  accessKeyId: process.env.SECRET_ACCESS_KEY,
+  secretAccessKey: process.env.AWSSecretKey,
+  accessKeyId: process.env.AWSAccessKeyId,
   region: 'ap-south-1',
   ACL:'public-read'
 });
+const s3 = new aws.S3();
+
 
 var upload = multer({
   storage: multerS3({
@@ -47,6 +51,7 @@ var upload = multer({
       }
   })
 });
+
 
 function verifyToken(req, res, next) {
   if(!req.headers.authorization) {
@@ -82,6 +87,27 @@ function verifyToken(req, res, next) {
         }
       });
     });
+
+    app.post('/training', upload.single('file'),function(req,res) {
+        var newTraining = new Training({
+          name: req.body.name,
+          description: req.body.description,
+          startDateTime: req.body.startDateTime,
+          endDateTime: req.body.endDateTime,
+          upload: req.body.upload
+        });
+
+       Training.create(newTraining , (err,data) => {
+         if(err){
+           console.log(err);
+         }
+         else{
+           console.log(data);
+           res.json(data);
+         }
+       })
+    })
+
 
       app.post("/users/signup", function(req, res) {
         var newUser = new User({
@@ -138,9 +164,10 @@ function verifyToken(req, res, next) {
         });
       });
 
-      app.post('/upload', upload.single('file'), function (req, res, next) {
-        res.send("Uploaded!");
-    });
+    //   app.post('/upload', upload.single('file'), function (req, res, next) {
+    //     res.send("Uploaded!");
+    // });
+
 
 app.listen(4000, () => {
     console.log('Server started!')
