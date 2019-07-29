@@ -69,6 +69,12 @@ function verifyToken(req, res, next) {
   next()
 }
 
+function userDetail (id) {
+  User.findById(id , function(err , userdetail){
+        return userdetail;
+  });
+}
+
     app.get("/users", function(req, res) {
       // Userschema.create({name:"dfg",age:"20"},function(err,data){
       //     if(err){
@@ -88,8 +94,9 @@ function verifyToken(req, res, next) {
       });
     });
 
-    app.post('/training', upload.single('file'),function(req,res) {
+    app.post('/training', verifyToken , upload.single('file'),function(req,res) {
         var newTraining = new Training({
+          userId: req.userId,
           name: req.body.name,
           description: req.body.description,
           startDateTime: req.body.startDateTime,
@@ -103,10 +110,29 @@ function verifyToken(req, res, next) {
          }
          else{
            console.log(data);
-           res.json(data);
+           res.json({data});
          }
        })
-    })
+    });
+
+    app.get('/training' , function(req, res){
+        Training.find({} , function(err , allTrainings) {
+          if(err){
+            console.log(err);
+          }
+          else{
+            res.json(allTrainings);
+          }
+        }).populate('userId').exec(function(err , users){
+          if(err){
+            console.log(err);
+          }
+          else{
+            //console.log(users)
+          }
+        });
+      
+    });
 
 
       app.post("/users/signup", function(req, res) {
@@ -158,7 +184,14 @@ function verifyToken(req, res, next) {
               console.log("Login Successfull!")
               let payload = {subject: data._id};
                 let token = jwt.sign(payload , 'secretKey');
-                res.json({token: token});
+                //console.log(jwt.decode(token));
+                User.findById(mongoose.Types.ObjectId(jwt.decode(token).subject)).exec(function(err , item){
+                  if(err){
+                    console.log(err);
+                  }else{
+                res.json({token: token , currentUser: item.firstName});
+                  }
+                })
             }
             }
         });

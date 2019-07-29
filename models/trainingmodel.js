@@ -4,7 +4,11 @@ var Trainingschema = new mongoose.Schema({
     description: String,
     startDateTime: String,
     endDateTime: String,
-    upload: String
+    upload: String,
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    }
 }) ;
 
 module.exports = mongoose.model("trainings" , Trainingschema);
