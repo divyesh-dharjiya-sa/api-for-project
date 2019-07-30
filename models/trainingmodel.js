@@ -5,6 +5,7 @@ var Trainingschema = new mongoose.Schema({
     startDateTime: String,
     endDateTime: String,
     upload: String,
+    attendQuery : Boolean,
     userId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user'

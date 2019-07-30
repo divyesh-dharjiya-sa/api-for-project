@@ -101,7 +101,8 @@ function userDetail (id) {
           description: req.body.description,
           startDateTime: req.body.startDateTime,
           endDateTime: req.body.endDateTime,
-          upload: req.body.upload
+          upload: req.body.upload,
+          attendQuery : req.body.attendQuery
         });
 
        Training.create(newTraining , (err,data) => {
