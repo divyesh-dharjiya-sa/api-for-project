@@ -16,7 +16,7 @@ app.use(passport.initialize());
 
 var User = require("./models/usersmodel");
 var Training = require("./models/trainingmodel");
-
+var TrainingJoin = require("./models/trainingjoinmodel");
 mongoose.connect("mongodb://localhost:27017/training", {
   useNewUrlParser: true
 });
@@ -134,6 +134,21 @@ function userDetail (id) {
         });
       
     });
+
+    app.put("/training", function(req, res) {
+      Training.findByIdAndUpdate(req.body._id, req.body, function(
+        err,
+        updateTraining
+      ) {
+        if (err) {
+          res.json({"err": err});
+        } else {
+          // console.log(updateTraining);
+          res.json({"body": updateTraining});
+        }
+      });
+    });
+  
 
 
       app.post("/users/signup", function(req, res) {
