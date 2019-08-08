@@ -149,7 +149,45 @@ function userDetail (id) {
       });
     });
   
+    app.post("/jointraining" , function(req,res){
+      var newTrainingJoinSchema = new TrainingJoin({
+          trainingId: req.body.trainingdata.trainingId,
+          userId: req.body.trainingdata.userId,
+          attendQuery: req.body.trainingdata.attendQuery
+      });
 
+      TrainingJoin.create(newTrainingJoinSchema , (err,data) =>{
+        if(err){
+          console.log(err);
+        }
+        else{
+          res.json(data);
+        }
+      });
+    });
+
+    app.delete("/jointraining/:id" , function(req , res){
+      console.log(req.params);
+      TrainingJoin.findByIdAndRemove(req.params.id , (err , data) => {
+        if(err){
+          console.log(err);
+        }
+        else{
+          console.log(data);
+        }
+      })
+    });
+
+    app.get("/jointraining" , function(req, res){
+        TrainingJoin.find({} , function(err , data){
+          if(err){
+            console.log(err);
+          }
+          else{
+            res.json(data);
+          }
+        });
+    })
 
       app.post("/users/signup", function(req, res) {
         var newUser = new User({
@@ -205,7 +243,8 @@ function userDetail (id) {
                   if(err){
                     console.log(err);
                   }else{
-                res.json({token: token , currentUser: item.firstName});
+                    console.log(item);
+                res.json({token: token , currentUser: item.firstName , userId: item.id});
                   }
                 })
             }
